@@ -3,8 +3,9 @@ node {
         checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'dinesh2531', url: 'https://github.com/dinesh2531/web-project.git']]])
     }
     stage('Build Maven') { 
-        bat 'mvn clean install'
-       // bat 'mvn package'
+       // bat 'mvn clean install'
+        bat 'mvn compile'
+        bat 'mvn package'
     }
     stage('Build Docker Image') { 
        
