@@ -4,7 +4,7 @@ node {
     }
     stage('Build Maven') { 
        // bat 'mvn clean install'
-        bat 'mvn compile'
+        //bat 'mvn compile'
         bat 'mvn package'
     }
     stage('Build Docker Image') { 
