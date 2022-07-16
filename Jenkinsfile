@@ -1,47 +1,34 @@
-pipeline {
-    agent any
-    tools {
-        maven 'Maven363'
+node {  
+    stage('checkout') { 
+        checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'dinesh2531', url: 'https://github.com/dinesh2531/web-project.git']]])
     }
-    options {
-        timeout(10)
-        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '5', numToKeepStr: '5')
+    stage('Build Maven') { 
+        bat 'mvn clean install'
+       // bat 'mvn package'
     }
-    stages {
-        stage('Build') {
-            steps {
-                sh "mvn clean install"
-            }
-        }
-        stage('upload artifact to nexus') {
-            steps {
-                nexusArtifactUploader artifacts: [
-                    [
-                        artifactId: 'wwp', 
-                        classifier: '', 
-                        file: 'target/wwp-1.0.0.war', 
-                        type: 'war'
-                    ]
-                ], 
-                    credentialsId: 'nexus3', 
-                    groupId: 'koddas.web.war', 
-                    nexusUrl: '10.0.0.91:8081', 
-                    nexusVersion: 'nexus3', 
-                    protocol: 'http', 
-                    repository: 'samplerepo', 
-                    version: '1.0.0'
-            }
-        }
+    stage('Build Docker Image') { 
+       
+           bat 'docker build -t dinesh2531/mysamp:Snapshot.1.0.1 .'
+       
     }
-    post {
-        always{
-            deleteDir()
-        }
-        failure {
-            echo "sendmail -s mvn build failed receipients@my.com"
-        }
-        success {
-            echo "The job is successful"
-        }
+    stage('Docker Image run') { 
+        
+        //withCredentials([usernameColonPassword(credentialsId: 'registry_docker', variable: 'docker_user')]) {
+            
+       bat 'docker login -u dinesh2531 -p Dinesh@123'
+       
+       bat 'docker push dinesh2531/mysamp:Snapshot.1.0.1'
+       
+       bat 'docker images'
+        
+         
+        
+        bat 'docker run -p 8040:8080 dinesh2531/mysamp:Snapshot.1.0.1'
+        
+        bat 'docker ps -a'
+//}
+
+        
     }
 }
+
